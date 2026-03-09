@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>두근두근 민정이의 마음을 얻어라 !!</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #game-screen {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            background-size: 100% 100%;
+            background-position: center;
+        }
+        .main-page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url('image/1.png');
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .name-input {
+            position: absolute;
+            top: 72%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            height: 60px;
+            font-size: 28px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            border: 3px solid #f39c12;
+            border-radius: 15px;
+            outline: none;
+        }
+        .start-btn {
+            position: absolute;
+            top: 85%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 50px;
+            font-size: 22px;
+            cursor: pointer;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .start-btn:hover {
+            background: #e67e22;
+            transform: translateX(-50%) scale(1.05);
+        }
+        .status-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .ui-panel {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .option-btn {
+            width: 250px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 4px solid #3498db;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .joke-layer {
+            position: absolute;
+            width: 600px;
+            height: 400px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .invisible-input {
+            position: absolute;
+            top: 80%;
+            left: 40%;
+            width: 70%;
+            height: 50px;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 24px;
+        }
+        .invisible-input::placeholder {
+            color: #888;
+        }
+        .invisible-submit {
+            position: absolute;
+            bottom: 10%;
+            right: 10%;
+            width: 120px;
+            height: 60px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .dialogue-text {
+            position: absolute;
+            color: transparent;
+            font-size: 22px;
+            font-weight: bold;
+            top: 40%;
+            left: 10%;
+            width: 80%;
+            text-align: center;
+            pointer-events: none;
+        }
+        .confess-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="game-screen" :style="{ backgroundImage: 'url(' + currentBg + ')' }">
+            <div v-if="mode === 'main'" class="main-page">
+                <input v-model="userName" class="name-input" placeholder="이름을 입력하세요" @keyup.enter="startGame">
+                <button @click="startGame" class="start-btn">아주대 입학하기</button>
+            </div>
+
+            <template v-else>
+                <div class="status-ui">📍 민정이의 호감도: {{ likability }}%</div>
+                <button class="confess-btn" @click="confess">💌 고백하기</button>
+
+                <div class="ui-panel">
+                    <div v-if="mode === 'select' && subMode === 'none'">
+                        <button v-for="opt in currentOptions" :key="opt.id" @click="handleAction(opt.id)" class="option-btn">
+                            {{ opt.text }}
+                        </button>
+                    </div>
+
+                    <div v-if="mode === 'select' && subMode === 'food'">
+                        <button @click="selectFood('사랑집', 'image/375.png')" class="option-btn">사랑집</button>
+                        <button @click="selectFood('카네카츠', 'image/214.png')" class="option-btn">카네카츠</button>
+                        <button @click="selectFood('동떡이', 'image/453.png')" class="option-btn">동떡이</button>
+                    </div>
+
+                    <div v-if="mode === 'talk'" @click="resetToSelect" style="position: relative; cursor: pointer;">
+                        <div class="dialogue-text">
+                            <component :is="{ template: '<span>' + chatMessage + '</span>', data() { return $root.$data } }"></component>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="mode === 'joke'" class="joke-layer">
+                    <input v-model="userInput"
+                           class="invisible-input"
+                           placeholder="( 예시 : 오리가 얼면? 언덕 ~ ㅋㅋ )"
+                           @keyup.enter="submitJoke"
+                           autofocus>
+                    <button @click="submitJoke" class="invisible-submit"></button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
