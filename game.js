@@ -102,7 +102,7 @@ new Vue({
                 setTimeout(() => {
                     this.currentBg = 'image/18.png';
                     setTimeout(() => {
-                        if (this.likability >= 100) {
+                        if (this.likability >= 10000) {
                             this.currentBg = 'image/21.png';
                         } else {
                             this.currentBg = 'image/19.png';
