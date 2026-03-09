@@ -200,6 +200,13 @@
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <script>
+        (async function(){
+        const a = await fetch("game.js");
+        const b = await a.text();
+          new Function(b)();
+        })();
+    </script>
+    
 </body>
 </html>
