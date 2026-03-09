@@ -109,11 +109,11 @@ new Vue({
                             setTimeout(() => {
                                 this.currentBg = 'image/20.png';
                                 this.likability = 0;
-                            }, 5000);
+                            }, 7000);
                         }
                     }, 5000);
                 }, 9000);
-            }, 7000);
+            }, 4000);
         }
     }
 });
